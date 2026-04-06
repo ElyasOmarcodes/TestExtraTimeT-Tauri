@@ -1,4 +1,4 @@
-name: Build Smart Timetable Tauri EXE (Offline & No Icon)
+name: Build Smart Timetable Tauri EXE
 
 on:
   push:
@@ -26,30 +26,25 @@ jobs:
       - name: Install Frontend Dependencies
         run: npm install
 
-      # لومړی ستاسو د ویب پروژه بلډ کوو ترڅو ټول فایلونه افلاین بڼې (dist) ته واړول شي
+      # لومړی ستاسو د ویب پروژه بلډ کوو
       - name: Build React App (Frontend for Offline)
         run: npm run build
 
-      - name: Initialize Tauri & Remove Icons
+      - name: Initialize Tauri (With Default Icon)
         run: |
-          # د Tauri v2 نوی او سم کمانډ د سرور لپاره (پرته له خالي کمانډونو او د --ci سره)
           npx @tauri-apps/cli@latest init --ci --app-name "smart-timetable" --window-title "هوښیار مهالویش" --frontend-dist "../dist" --dev-url "http://localhost:5173"
           
-          # د اپلیکیشن د بنډل نوم بدلول ترڅو د بلډ ارور ورنکړي
+          # د اپلیکیشن د بنډل نوم بدلول
           (Get-Content src-tauri/tauri.conf.json) -replace 'com.tauri.dev', 'com.smartschool.timetable' | Set-Content src-tauri/tauri.conf.json
-          
-          # د آیکون برخه په بشپړ ډول ړنګول
-          $json = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
-          if ($null -ne $json.bundle) { $json.bundle.icon = @() }
-          if ($null -ne $json.tauri -and $null -ne $json.tauri.bundle) { $json.tauri.bundle.icon = @() }
-          $json | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
 
-      - name: Build Tauri App (Offline EXE)
+      - name: Build Tauri App (EXE & MSI)
         run: npx @tauri-apps/cli@latest build
 
+      # د جوړ شوي اپلیکیشن اپلوډ کول
       - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Hoshyar-Mahalwesh-Offline-App
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          # دا به هم exe او هم msi فایلونه پیدا او اپلوډ کړي
+          path: src-tauri/target/release/bundle/**/*
           retention-days: 5
