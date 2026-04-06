@@ -32,16 +32,16 @@ jobs:
 
       - name: Initialize Tauri & Remove Icons
         run: |
-          # د Tauri فایلونو اوتومات جوړول
-          npx @tauri-apps/cli@latest init --app-name "smart-timetable" --window-title "هوښیار مهالویش" --dist-dir "../dist" --dev-path "http://localhost:5173" --before-build-command "" --before-dev-command ""
+          # د Tauri v2 نوي کمانډونه
+          npx @tauri-apps/cli@latest init --app-name "smart-timetable" --window-title "هوښیار مهالویش" --frontend-dist "../dist" --dev-url "http://localhost:5173" --before-build-command "" --before-dev-command ""
           
           # د اپلیکیشن د بنډل نوم بدلول ترڅو د بلډ ارور ورنکړي
           (Get-Content src-tauri/tauri.conf.json) -replace 'com.tauri.dev', 'com.smartschool.timetable' | Set-Content src-tauri/tauri.conf.json
           
-          # د آیکون برخه په بشپړ ډول ړنګول ترڅو هیڅ آیکون ته اړتیا پاتې نشي
+          # د آیکون برخه په بشپړ ډول ړنګول (د نوي Tauri 2.0 لپاره اصلاح شوی)
           $json = Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json
-          if ($null -ne $json.tauri.bundle.icon) { $json.tauri.bundle.icon = @() }
-          if ($null -ne $json.bundle.icon) { $json.bundle.icon = @() }
+          if ($null -ne $json.bundle) { $json.bundle.icon = @() }
+          if ($null -ne $json.tauri -and $null -ne $json.tauri.bundle) { $json.tauri.bundle.icon = @() }
           $json | ConvertTo-Json -Depth 10 | Set-Content src-tauri/tauri.conf.json
 
       - name: Build Tauri App (Offline EXE)
